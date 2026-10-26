@@ -1,0 +1,222 @@
+{% extends 'booking/base.html' %}
+
+{% block title %}Staff Dashboard - LuxeSalon & Barber{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <div class="d-flex align-items-center gap-2">
+      <h2 class="fw-bold mb-0">Staff Dashboard</h2>
+      <span class="badge bg-primary">Stylist Workspace</span>
+    </div>
+    <p class="text-muted small mb-0">
+      Overview for <strong>{{ today|date:"l, F d, Y" }}</strong> &bull; Schedule & Appointments Control
+    </p>
+  </div>
+  
+  <div class="d-flex gap-2">
+    <a href="{% url 'staff_slots' %}" class="btn btn-outline-dark">
+      <i class="bi bi-clock-history me-1"></i> Bulk Create Slots
+    </a>
+    <a href="{% url 'staff_appointments' %}" class="btn btn-primary">
+      <i class="bi bi-card-checklist me-1"></i> Manage Appointments
+    </a>
+  </div>
+</div>
+
+<!-- Key Metrics Row -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+        <i class="bi bi-hourglass-split"></i>
+      </div>
+      <div>
+        <div class="fs-4 fw-extrabold text-dark">{{ pending_count }}</div>
+        <div class="text-muted small fw-semibold">Pending Approval</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+        <i class="bi bi-check2-circle"></i>
+      </div>
+      <div>
+        <div class="fs-4 fw-extrabold text-dark">{{ confirmed_count }}</div>
+        <div class="text-muted small fw-semibold">Confirmed</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-success bg-opacity-10 text-success">
+        <i class="bi bi-trophy-fill"></i>
+      </div>
+      <div>
+        <div class="fs-4 fw-extrabold text-dark">{{ completed_count }}</div>
+        <div class="text-muted small fw-semibold">Completed</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon bg-info bg-opacity-10 text-info">
+        <i class="bi bi-calendar2-week"></i>
+      </div>
+      <div>
+        <div class="fs-4 fw-extrabold text-dark">{{ free_slots_count }}</div>
+        <div class="text-muted small fw-semibold">Open Future Slots</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Two Columns: Today's Appointments & Pending Queue -->
+<div class="row g-4">
+  <!-- Today's Schedule -->
+  <div class="col-lg-7">
+    <div class="card card-luxe h-100 p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">
+          <i class="bi bi-calendar-event text-primary me-2"></i> Today's Schedule
+        </h5>
+        <span class="badge bg-light text-dark border">{{ today_appointments|length }} booked</span>
+      </div>
+
+      {% if today_appointments %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light small">
+              <tr>
+                <th>Time</th>
+                <th>Client</th>
+                <th>Service</th>
+                <th>Status</th>
+                <th class="text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for appt in today_appointments %}
+                <tr>
+                  <td class="fw-bold text-nowrap">
+                    {{ appt.slot.start_time|time:"g:i A" }}
+                  </td>
+                  <td>
+                    <div class="fw-semibold text-dark">{{ appt.customer.get_full_name|default:appt.customer.username }}</div>
+                    <div class="text-muted small">{{ appt.customer.email }}</div>
+                  </td>
+                  <td>
+                    <div class="small fw-semibold">{{ appt.service.name }}</div>
+                  </td>
+                  <td>
+                    <span class="badge {{ appt.status_badge_class }} badge-status">
+                      {{ appt.get_status_display }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                      {% if appt.status == 'pending' %}
+                        <form method="post" action="{% url 'staff_approve_appointment' appt.id %}" class="d-inline">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-sm btn-outline-success" title="Approve">
+                            <i class="bi bi-check-lg"></i>
+                          </button>
+                        </form>
+                      {% endif %}
+                      {% if appt.status == 'confirmed' %}
+                        <form method="post" action="{% url 'staff_complete_appointment' appt.id %}" class="d-inline">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-sm btn-outline-primary" title="Mark Done">
+                            <i class="bi bi-check-all"></i>
+                          </button>
+                        </form>
+                      {% endif %}
+                      <a href="{% url 'staff_reschedule_appointment' appt.id %}" class="btn btn-sm btn-outline-secondary" title="Reschedule">
+                        <i class="bi bi-arrow-repeat"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-calendar-check fs-1 text-muted mb-2 d-block"></i>
+          <p class="mb-0">No appointments scheduled for today yet.</p>
+          <a href="{% url 'staff_slots' %}?date={{ today|date:'Y-m-d' }}" class="btn btn-outline-primary btn-sm mt-3">
+            Check or create today's slots
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Pending Approvals Queue -->
+  <div class="col-lg-5">
+    <div class="card card-luxe h-100 p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">
+          <i class="bi bi-clock-history text-warning me-2"></i> Pending Approvals
+        </h5>
+        <span class="badge bg-warning text-dark">{{ pending_count }} awaiting</span>
+      </div>
+
+      {% if recent_pending %}
+        <div class="d-flex flex-column gap-3">
+          {% for appt in recent_pending %}
+            <div class="p-3 bg-light rounded-3 border">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <h6 class="fw-bold text-dark mb-0">{{ appt.service.name }}</h6>
+                  <span class="small text-muted">
+                    Client: <strong>{{ appt.customer.get_full_name|default:appt.customer.username }}</strong>
+                  </span>
+                </div>
+                <span class="badge bg-warning text-dark">Pending</span>
+              </div>
+
+              <div class="small text-muted mb-2">
+                <i class="bi bi-calendar me-1"></i> {{ appt.slot.date|date:"D, M d" }} &bull; 
+                <i class="bi bi-clock me-1"></i> {{ appt.slot.start_time|time:"g:i A" }} - {{ appt.slot.end_time|time:"g:i A" }}
+              </div>
+
+              {% if appt.notes %}
+                <div class="small bg-white p-2 rounded border mb-2 fst-italic">
+                  "{{ appt.notes }}"
+                </div>
+              {% endif %}
+
+              <div class="d-flex gap-2">
+                <form method="post" action="{% url 'staff_approve_appointment' appt.id %}" class="flex-fill">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-success btn-sm w-100 fw-semibold">
+                    <i class="bi bi-check-circle me-1"></i> Approve
+                  </button>
+                </form>
+
+                <form method="post" action="{% url 'staff_cancel_appointment' appt.id %}" class="flex-fill">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('Cancel/reject this booking?')">
+                    <i class="bi bi-x-circle me-1"></i> Reject
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-check-circle fs-1 text-success mb-2 d-block"></i>
+          <p class="mb-0">All pending appointment requests have been processed!</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

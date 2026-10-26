@@ -1,0 +1,43 @@
+{% extends 'booking/base.html' %}
+
+{% block title %}403 Forbidden - Staff Access Only | LuxeSalon{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+  <div class="col-md-7 col-lg-6 text-center">
+    <div class="card card-luxe p-5">
+      <div class="stat-icon bg-danger bg-opacity-10 text-danger mx-auto mb-3" style="width: 64px; height: 64px; font-size: 2rem;">
+        <i class="bi bi-shield-lock-fill"></i>
+      </div>
+      
+      <span class="badge bg-danger text-uppercase px-3 py-1 mb-2 align-self-center">HTTP 403 &bull; Access Denied</span>
+      <h2 class="fw-extrabold text-dark mb-2">Staff Only Area</h2>
+      
+      <p class="text-muted mb-4">
+        The page you are trying to access is restricted to members of the <strong>Staff</strong> group.
+        You are currently logged in as <strong>{{ user.username }}</strong> with role:
+        <span class="badge bg-secondary">
+          {% if user.groups.all.0 %}{{ user.groups.all.0.name }}{% else %}Customer{% endif %}
+        </span>.
+      </p>
+
+      <div class="bg-light p-3 rounded-3 border text-start mb-4 small">
+        <div class="fw-bold mb-1"><i class="bi bi-lightbulb text-warning me-1"></i> Testing Note:</div>
+        If you wish to test staff features (schedule management, bulk slot generation, appointment approvals), please log in using the pre-seeded staff credentials:
+        <div class="mt-2 font-monospace bg-white p-2 rounded border">
+          Username: <strong>staff1</strong> | Password: <strong>staff123</strong>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-center gap-3">
+        <a href="{% url 'my_bookings' %}" class="btn btn-outline-secondary px-4">
+          <i class="bi bi-arrow-left me-1"></i> Go to My Bookings
+        </a>
+        <a href="{% url 'login' %}?demo=staff" class="btn btn-dark px-4">
+          <i class="bi bi-box-arrow-in-right me-1"></i> Switch to Staff
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

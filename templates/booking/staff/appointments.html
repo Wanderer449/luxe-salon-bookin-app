@@ -1,0 +1,158 @@
+{% extends 'booking/base.html' %}
+
+{% block title %}Manage Appointments - Staff | LuxeSalon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <h2 class="fw-bold mb-1">Appointment Management</h2>
+    <p class="text-muted small mb-0">Review client bookings, approve pending requests, reschedule, or cancel.</p>
+  </div>
+  <a href="{% url 'staff_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i> Staff Dashboard
+  </a>
+</div>
+
+<!-- Filters Bar -->
+<div class="card card-luxe p-3 mb-4">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <!-- Status Filter Pills -->
+    <div class="btn-group btn-group-sm flex-wrap" role="group">
+      <a href="?status=all&date={{ date_filter }}" class="btn {% if status_filter == 'all' %}btn-dark{% else %}btn-outline-secondary{% endif %}">
+        All Statuses
+      </a>
+      <a href="?status=pending&date={{ date_filter }}" class="btn {% if status_filter == 'pending' %}btn-warning text-dark fw-bold{% else %}btn-outline-secondary{% endif %}">
+        Pending
+      </a>
+      <a href="?status=confirmed&date={{ date_filter }}" class="btn {% if status_filter == 'confirmed' %}btn-primary text-white{% else %}btn-outline-secondary{% endif %}">
+        Confirmed
+      </a>
+      <a href="?status=completed&date={{ date_filter }}" class="btn {% if status_filter == 'completed' %}btn-success text-white{% else %}btn-outline-secondary{% endif %}">
+        Completed
+      </a>
+      <a href="?status=cancelled&date={{ date_filter }}" class="btn {% if status_filter == 'cancelled' %}btn-danger text-white{% else %}btn-outline-secondary{% endif %}">
+        Cancelled
+      </a>
+    </div>
+
+    <!-- Date Range Dropdown / Links -->
+    <div class="d-flex align-items-center gap-2">
+      <span class="small text-muted fw-semibold">Date Window:</span>
+      <div class="btn-group btn-group-sm">
+        <a href="?status={{ status_filter }}&date=all" class="btn {% if date_filter == 'all' %}btn-dark{% else %}btn-outline-secondary{% endif %}">
+          All Dates
+        </a>
+        <a href="?status={{ status_filter }}&date=today" class="btn {% if date_filter == 'today' %}btn-dark{% else %}btn-outline-secondary{% endif %}">
+          Today
+        </a>
+        <a href="?status={{ status_filter }}&date=upcoming" class="btn {% if date_filter == 'upcoming' %}btn-dark{% else %}btn-outline-secondary{% endif %}">
+          Upcoming
+        </a>
+        <a href="?status={{ status_filter }}&date=past" class="btn {% if date_filter == 'past' %}btn-dark{% else %}btn-outline-secondary{% endif %}">
+          Past
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Appointments Table -->
+<div class="card card-luxe overflow-hidden">
+  {% if appointments %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light small">
+          <tr>
+            <th class="ps-4">ID</th>
+            <th>Customer</th>
+            <th>Service</th>
+            <th>Scheduled Time</th>
+            <th>Stylist</th>
+            <th>Status</th>
+            <th>Notes</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for appt in appointments %}
+            <tr>
+              <td class="ps-4 fw-bold text-muted">#{{ appt.id }}</td>
+              <td>
+                <div class="fw-bold text-dark">{{ appt.customer.get_full_name|default:appt.customer.username }}</div>
+                <div class="text-muted small">{{ appt.customer.email }}</div>
+              </td>
+              <td>
+                <div class="fw-semibold">{{ appt.service.name }}</div>
+                <div class="text-muted small">{{ appt.service.duration_minutes }}m &bull; ${{ appt.service.price }}</div>
+              </td>
+              <td>
+                <div class="fw-semibold text-dark">{{ appt.slot.date|date:"D, M d, Y" }}</div>
+                <div class="text-muted small">{{ appt.slot.start_time|time:"g:i A" }} - {{ appt.slot.end_time|time:"g:i A" }}</div>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">
+                  {{ appt.slot.staff.get_full_name|default:appt.slot.staff.username }}
+                </span>
+              </td>
+              <td>
+                <span class="badge {{ appt.status_badge_class }} badge-status">
+                  {{ appt.get_status_display }}
+                </span>
+              </td>
+              <td class="small text-muted" style="max-width: 180px;">
+                {{ appt.notes|default:"—"|truncatechars:35 }}
+              </td>
+              <td class="text-end pe-4">
+                <div class="btn-group btn-group-sm">
+                  <!-- Approve (Pending -> Confirmed) -->
+                  {% if appt.status == 'pending' %}
+                    <form method="post" action="{% url 'staff_approve_appointment' appt.id %}" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-success btn-sm" title="Approve booking">
+                        <i class="bi bi-check-circle me-1"></i> Approve
+                      </button>
+                    </form>
+                  {% endif %}
+
+                  <!-- Mark Completed (Confirmed -> Completed) -->
+                  {% if appt.status == 'confirmed' %}
+                    <form method="post" action="{% url 'staff_complete_appointment' appt.id %}" class="d-inline">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-outline-success btn-sm" title="Mark as Completed">
+                        <i class="bi bi-check2-all"></i>
+                      </button>
+                    </form>
+                  {% endif %}
+
+                  <!-- Reschedule (Pending or Confirmed) -->
+                  {% if appt.status == 'pending' or appt.status == 'confirmed' %}
+                    <a href="{% url 'staff_reschedule_appointment' appt.id %}" class="btn btn-outline-primary btn-sm" title="Reschedule to another slot">
+                      <i class="bi bi-arrow-repeat"></i>
+                    </a>
+                  {% endif %}
+
+                  <!-- Cancel (Pending or Confirmed) -->
+                  {% if appt.status == 'pending' or appt.status == 'confirmed' %}
+                    <form method="post" action="{% url 'staff_cancel_appointment' appt.id %}" class="d-inline" onsubmit="return confirm('Cancel this appointment and free the time slot?');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-outline-danger btn-sm" title="Cancel booking">
+                        <i class="bi bi-x-circle"></i>
+                      </button>
+                    </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-inbox fs-1 text-muted mb-2 d-block"></i>
+      <h5>No appointments found matching this filter</h5>
+      <p class="small mb-0">Try changing your status or date filter above.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

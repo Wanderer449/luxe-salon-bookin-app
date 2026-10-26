@@ -1,0 +1,176 @@
+{% extends 'booking/base.html' %}
+
+{% block title %}Bulk Slot Generator - Staff | LuxeSalon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <h2 class="fw-bold mb-1">Time Slot Manager</h2>
+    <p class="text-muted small mb-0">Generate non-overlapping appointment slots in bulk or manage individual slots.</p>
+  </div>
+  <a href="{% url 'staff_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+  </a>
+</div>
+
+<div class="row g-4">
+  <!-- Left Column: Bulk Slot Generation Form -->
+  <div class="col-lg-5">
+    <div class="card card-luxe p-4">
+      <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+        <div class="stat-icon bg-warning bg-opacity-10 text-warning" style="width: 38px; height: 38px; font-size: 1.1rem;">
+          <i class="bi bi-lightning-charge-fill"></i>
+        </div>
+        <h5 class="fw-bold mb-0">Bulk Slot Generator</h5>
+      </div>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 small">
+            {% for error in form.non_field_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <!-- Staff Member -->
+        <div class="mb-3">
+          <label class="form-label small fw-bold" for="{{ form.staff.id_for_label }}">
+            {{ form.staff.label }}
+          </label>
+          {{ form.staff }}
+          {% if form.staff.errors %}
+            <div class="text-danger small mt-1">{{ form.staff.errors|striptags }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Date -->
+        <div class="mb-3">
+          <label class="form-label small fw-bold" for="{{ form.date.id_for_label }}">
+            {{ form.date.label }}
+          </label>
+          {{ form.date }}
+          {% if form.date.errors %}
+            <div class="text-danger small mt-1">{{ form.date.errors|striptags }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Start & End Time -->
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label small fw-bold" for="{{ form.start_time.id_for_label }}">
+              {{ form.start_time.label }}
+            </label>
+            {{ form.start_time }}
+            {% if form.start_time.errors %}
+              <div class="text-danger small mt-1">{{ form.start_time.errors|striptags }}</div>
+            {% endif %}
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-bold" for="{{ form.end_time.id_for_label }}">
+              {{ form.end_time.label }}
+            </label>
+            {{ form.end_time }}
+            {% if form.end_time.errors %}
+              <div class="text-danger small mt-1">{{ form.end_time.errors|striptags }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Slot Length -->
+        <div class="mb-4">
+          <label class="form-label small fw-bold" for="{{ form.slot_length.id_for_label }}">
+            {{ form.slot_length.label }}
+          </label>
+          {{ form.slot_length }}
+          {% if form.slot_length.errors %}
+            <div class="text-danger small mt-1">{{ form.slot_length.errors|striptags }}</div>
+          {% endif %}
+          <div class="form-text small">Non-overlapping slots will be generated step-by-step between start & end times.</div>
+        </div>
+
+        <button type="submit" class="btn btn-dark w-100 py-2 fw-semibold">
+          <i class="bi bi-plus-circle me-1"></i> Generate Non-Overlapping Slots
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Right Column: Slots for Selected Date -->
+  <div class="col-lg-7">
+    <div class="card card-luxe p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-wrap gap-2">
+        <h5 class="fw-bold mb-0">
+          <i class="bi bi-calendar-day text-primary me-2"></i> Slots for {{ selected_date|date:"l, M d, Y" }}
+        </h5>
+
+        <!-- Change Date Filter -->
+        <form method="get" class="d-flex align-items-center gap-2">
+          <input type="date" name="date" class="form-control form-control-sm" value="{{ selected_date|date:'Y-m-d' }}" onchange="this.form.submit()">
+        </form>
+      </div>
+
+      {% if existing_slots %}
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light small">
+              <tr>
+                <th>Time Window</th>
+                <th>Staff</th>
+                <th>Status</th>
+                <th class="text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for slot in existing_slots %}
+                <tr>
+                  <td class="fw-bold">
+                    {{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border">
+                      {{ slot.staff.get_full_name|default:slot.staff.username }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if slot.is_booked %}
+                      <span class="badge bg-danger">Booked</span>
+                      {% if slot.appointment %}
+                        <small class="text-muted d-block">
+                          {{ slot.appointment.customer.username }} ({{ slot.appointment.get_status_display }})
+                        </small>
+                      {% endif %}
+                    {% else %}
+                      <span class="badge bg-success">Available</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    {% if not slot.is_booked %}
+                      <form method="post" action="{% url 'staff_delete_slot' slot.id %}" class="d-inline" onsubmit="return confirm('Delete this unbooked slot?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete unbooked slot">
+                          <i class="bi bi-trash3"></i>
+                        </button>
+                      </form>
+                    {% else %}
+                      <span class="text-muted small" title="Cannot delete booked slot">Locked</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-calendar-x fs-1 text-muted mb-2 d-block"></i>
+          <p class="mb-0">No time slots have been created for this date yet.</p>
+          <small>Use the form on the left to generate slots.</small>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

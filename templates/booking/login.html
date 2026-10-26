@@ -1,0 +1,90 @@
+{% extends 'booking/base.html' %}
+
+{% block title %}Log In - LuxeSalon & Barber{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card card-luxe p-4 p-md-5">
+      <div class="text-center mb-4">
+        <span class="brand-icon mx-auto mb-2"><i class="bi bi-box-arrow-in-right"></i></span>
+        <h3 class="fw-bold mb-1">Welcome Back</h3>
+        <p class="text-muted small">Sign in to manage your appointments or salon schedule.</p>
+      </div>
+
+      <!-- Quick Demo Login Helpers -->
+      <div class="bg-light p-3 rounded-3 border mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-bold small text-muted text-uppercase">
+            <i class="bi bi-magic me-1"></i> 1-Click Demo Fill:
+          </span>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-primary btn-sm flex-fill" onclick="fillDemo('staff1', 'staff123')">
+            <i class="bi bi-shield-check me-1"></i> Staff (staff1)
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="fillDemo('user1', 'test123')">
+            <i class="bi bi-person me-1"></i> Customer (user1)
+          </button>
+        </div>
+      </div>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2">
+            {% for error in form.non_field_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <div class="mb-3">
+          <label class="form-label small fw-semibold" for="id_username">Username</label>
+          <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" required id="id_username" class="form-control" placeholder="Enter username">
+          {% if form.username.errors %}
+            <div class="text-danger small mt-1">{{ form.username.errors|striptags }}</div>
+          {% endif %}
+        </div>
+
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="form-label small fw-semibold mb-0" for="id_password">Password</label>
+          </div>
+          <input type="password" name="password" autocomplete="current-password" required id="id_password" class="form-control" placeholder="Enter password">
+          {% if form.password.errors %}
+            <div class="text-danger small mt-1">{{ form.password.errors|striptags }}</div>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="btn btn-dark w-100 py-2 fw-semibold">
+          <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+        </button>
+      </form>
+
+      <div class="text-center mt-4 pt-3 border-top small text-muted">
+        Don't have an account yet? <a href="{% url 'signup' %}" class="fw-bold text-dark">Sign up here</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function fillDemo(username, password) {
+    document.getElementById('id_username').value = username;
+    document.getElementById('id_password').value = password;
+  }
+
+  // Pre-fill if demo parameter is present in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const demoType = urlParams.get('demo');
+  if (demoType === 'staff') {
+    fillDemo('staff1', 'staff123');
+  } else if (demoType === 'customer') {
+    fillDemo('user1', 'test123');
+  }
+</script>
+{% endblock %}

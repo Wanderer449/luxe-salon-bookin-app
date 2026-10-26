@@ -1,0 +1,189 @@
+/* ============================================================
+   LuxeSalon & Barber - Custom Modern Stylesheet
+   ============================================================ */
+
+:root {
+  --salon-primary: #1e293b;       /* Deep slate */
+  --salon-primary-hover: #0f172a;
+  --salon-accent: #d97706;        /* Warm amber / gold accent */
+  --salon-accent-light: #fef3c7;
+  --salon-bg-light: #f8fafc;
+  --salon-card-border: #e2e8f0;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--salon-bg-light);
+  color: #334155;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+/* Navbar Styling */
+.navbar-luxe {
+  background: #ffffff;
+  border-bottom: 1px solid var(--salon-card-border);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-icon {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: #ffffff;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+/* Card Enhancements */
+.card-luxe {
+  border: 1px solid var(--salon-card-border);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-luxe-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+}
+
+/* Calendar Week Grid */
+.calendar-grid-wrapper {
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(140px, 1fr));
+  gap: 0.75rem;
+  min-width: 980px;
+}
+
+.day-column {
+  background: #ffffff;
+  border: 1px solid var(--salon-card-border);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.day-header {
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  background: #f1f5f9;
+  border-bottom: 1px solid var(--salon-card-border);
+}
+
+.day-header.today {
+  background: #fef3c7;
+  border-bottom-color: #fde68a;
+  color: #92400e;
+}
+
+.day-slots-container {
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+/* Slot Buttons */
+.slot-btn {
+  display: block;
+  width: 100%;
+  padding: 0.35rem 0.25rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 6px;
+  text-align: center;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+}
+
+/* Available slot: crisp emerald green */
+.slot-btn-available {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border-color: #a7f3d0;
+  cursor: pointer;
+}
+
+.slot-btn-available:hover {
+  background-color: #10b981;
+  color: #ffffff;
+  border-color: #059669;
+  transform: scale(1.02);
+}
+
+/* Taken slot: muted grey, unclickable */
+.slot-btn-taken {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+/* Badges styling */
+.badge-status {
+  padding: 0.35em 0.65em;
+  font-weight: 600;
+  font-size: 0.78rem;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* Hero Section */
+.hero-banner {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #ffffff;
+  padding: 4rem 1.5rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+}
+
+/* Metric / Stat Card */
+.stat-card {
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid var(--salon-card-border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
