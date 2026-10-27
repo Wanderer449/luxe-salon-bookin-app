@@ -43,7 +43,7 @@ A modern, full-featured appointment scheduling and salon management platform bui
 
 ---
 
-## 🏛️ Architecture Overview (3–4 Lines)
+## 🏛️ Architecture Overview
 
 > The application implements an MVT (Model-View-Template) architecture dividing concerns between domain models (`Service`, `TimeSlot`, `Appointment`), role-based group controllers (`@staff_required`, `@login_required`), and transactional booking views. Concurrency safety is enforced directly at the database engine using `select_for_update()` row-level locks inside `transaction.atomic()` blocks coupled with schema-level `OneToOneField` and `UniqueConstraint` guards. This architecture guarantees zero double-booking races while decoupling dev-friendly console notifications and customer state transitions.
 
